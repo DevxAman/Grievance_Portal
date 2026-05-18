@@ -15,8 +15,7 @@ import {
   Loader2, 
   RefreshCcw,
   Filter,
-  ChevronDown,
-  CheckSquare
+
 } from 'lucide-react';
 import { 
   fetchEmails, 
@@ -63,7 +62,7 @@ const AdminDashboardPage: React.FC = () => {
   }>({
     unreadOnly: false,
     starredOnly: false,
-    dateRange: '7days'
+    dateRange: 'all'
   });
   const [showReplyModal, setShowReplyModal] = useState<boolean>(false);
   const [showForwardModal, setShowForwardModal] = useState<boolean>(false);
@@ -112,6 +111,7 @@ const AdminDashboardPage: React.FC = () => {
     try {
       const fetchedEmails = await fetchEmails();
       setEmails(fetchedEmails);
+      console.log(fetchedEmails);
     } catch (error) {
       console.error('Failed to fetch emails:', error);
       toast.error('Failed to load emails');
@@ -300,7 +300,7 @@ const AdminDashboardPage: React.FC = () => {
     setFilterOptions({
       unreadOnly: false,
       starredOnly: false,
-      dateRange: '7days'
+      dateRange: 'all'
     });
     setSearchQuery('');
     setFilterOpen(false);
@@ -308,33 +308,67 @@ const AdminDashboardPage: React.FC = () => {
   };
 
   // Apply filters and search to the emails
-  const filteredEmails = emails.filter(email => {
-    // Filter based on active tab
-    if (activeTab === 'starred' && !email.starred) return false;
-    
-    // Apply search
-    if (searchQuery && !email.subject.toLowerCase().includes(searchQuery.toLowerCase()) && 
-        !email.from.toLowerCase().includes(searchQuery.toLowerCase())) {
+// Apply filters and search to the emails
+const filteredEmails = emails.filter((email) => {
+  // Safety checks
+  if (!email) return false;
+
+  // Filter based on active tab
+  if (activeTab === 'starred' && !email.starred) {
+    return false;
+  }
+
+  // Apply search
+  if (searchQuery) {
+    const query = searchQuery.toLowerCase();
+
+    const subject = email.subject?.toLowerCase() || '';
+    const from = email.from?.toLowerCase() || '';
+
+    if (!subject.includes(query) && !from.includes(query)) {
       return false;
     }
-    
-    // Apply filters
-    if (filterOptions.unreadOnly && email.read) return false;
-    if (filterOptions.starredOnly && !email.starred) return false;
-    
-    // Date range filter
-    if (filterOptions.dateRange !== 'all') {
-      const emailDate = new Date(email.date);
+  }
+
+  // Apply unread filter
+  if (filterOptions.unreadOnly && email.read) {
+    return false;
+  }
+
+  // Apply starred filter
+  if (filterOptions.starredOnly && !email.starred) {
+    return false;
+  }
+
+  // Safe date filtering
+  if (filterOptions.dateRange !== 'all') {
+    const emailDate = new Date(email.date);
+
+    // Skip invalid dates
+    if (!isNaN(emailDate.getTime())) {
       const today = new Date();
-      const daysDiff = Math.floor((today.getTime() - emailDate.getTime()) / (1000 * 60 * 60 * 24));
-      
-      if (filterOptions.dateRange === '7days' && daysDiff > 7) return false;
-      if (filterOptions.dateRange === '30days' && daysDiff > 30) return false;
-      if (filterOptions.dateRange === '90days' && daysDiff > 90) return false;
+
+      const daysDiff = Math.floor(
+        (today.getTime() - emailDate.getTime()) /
+          (1000 * 60 * 60 * 24)
+      );
+
+      if (filterOptions.dateRange === '7days' && daysDiff > 7) {
+        return false;
+      }
+
+      if (filterOptions.dateRange === '30days' && daysDiff > 30) {
+        return false;
+      }
+
+      if (filterOptions.dateRange === '90days' && daysDiff > 90) {
+        return false;
+      }
     }
-    
-    return true;
-  });
+  }
+
+  return true;
+});
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -670,7 +704,8 @@ const AdminDashboardPage: React.FC = () => {
                   <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: selectedEmail.body }} />
                 </div>
                 
-                {selectedEmail.attachments.length > 0 && (
+                {selectedEmail.attachments &&
+ selectedEmail.attachments.length > 0 && (
                   <div className="p-4 border-t">
                     <h3 className="font-medium mb-2">Attachments ({selectedEmail.attachments.length})</h3>
                     <div className="flex flex-wrap gap-2">

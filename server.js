@@ -938,7 +938,102 @@ app.get('/api/test/fetch-emails', async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 });
+const gmailTransporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'std.grievance@gmail.com',
+    pass: process.env.GMAIL_PASS
+  }
+});
+app.post('/api/contact', async (req, res) => {
+  try {
+    const { name, email, subject, message } = req.body;
 
+    // Validation
+    if (!name || !email || !subject || !message) {
+      return res.status(400).json({
+        success: false,
+        message: 'All fields are required'
+      });
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid email format'
+      });
+    }
+
+    const mailOptions = {
+      from: 'std.grievance@gmail.com',
+
+      to: 'std.grievance@gmail.com',
+
+      replyTo: email,
+
+      subject: `Contact Form - ${subject}`,
+
+      html: `
+        <div style="font-family: Arial, sans-serif; padding: 20px;">
+          
+          <h2 style="color:#2563eb;">
+            New Contact Form Submission
+          </h2>
+
+          <hr />
+
+          <p>
+            <strong>Name:</strong> ${name}
+          </p>
+
+          <p>
+            <strong>Email:</strong> ${email}
+          </p>
+
+          <p>
+            <strong>Subject:</strong> ${subject}
+          </p>
+
+          <p>
+            <strong>Message:</strong>
+          </p>
+
+          <div style="
+            background:#f3f4f6;
+            padding:15px;
+            border-radius:8px;
+            white-space:pre-wrap;
+          ">
+            ${message}
+          </div>
+
+        </div>
+      `
+    };
+
+    const info = await gmailTransporter.sendMail(mailOptions);
+
+    console.log('Mail sent:', info.response);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Message sent successfully',
+      messageId: info.messageId
+    });
+
+  } catch (error) {
+
+    console.error('Contact form email error:', error);
+
+    return res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to send message'
+    });
+  }
+});
 // Start server
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {

@@ -50,14 +50,26 @@ export const fetchEmails = async (): Promise<Email[]> => {
     // Transform the data to match our Email interface
     const data = await response.json();
     return data.emails.map((email: any) => ({
-      id: email.id,
-      subject: email.subject || 'No Subject',
-      from: email.from || 'unknown@example.com',
-      date: email.sentAt || new Date().toISOString(),
-      body: email.body || '',
-      read: email.isRead || false,
-      starred: email.isStarred || false,
-      attachments: email.attachments || []
+  id: String(email.id),
+
+  subject: email.subject ?? 'No Subject',
+
+  from: email.from ?? 'unknown@example.com',
+
+  date:
+    email.sentAt ??
+    email.created_at ??
+    new Date().toISOString(),
+
+  body: email.body ?? '',
+
+  read: email.isRead ?? false,
+
+  starred: email.isStarred ?? false,
+
+  attachments: Array.isArray(email.attachments)
+    ? email.attachments
+    : []
     }));
   } catch (error) {
     console.error('Error fetching emails:', error);
