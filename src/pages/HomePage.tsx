@@ -3,8 +3,10 @@ import HeroSection from '../components/home/HeroSection';
 import AnimatedStats from '../components/stats/AnimatedStats';
 import { Info, FileText, BookOpenCheck, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 
 const HomePage: React.FC = () => {
+  const { user } = useAuth();
   const grievanceTypes = [
     {
       icon: <Info className="h-8 w-8 text-blue-600" />,
@@ -165,18 +167,37 @@ const HomePage: React.FC = () => {
             Join thousands of students and staff who have successfully resolved their issues through our portal.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link 
-              to="/file-grievance" 
-              className="px-8 py-3 rounded-md text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
-            >
-              File a Grievance
-            </Link>
-            <Link 
-              to="/how-it-works" 
-              className="px-8 py-3 rounded-md text-base font-medium text-gray-900 bg-white hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
-            >
-              Learn More
-            </Link>
+            {user?.role !== 'admin' ? (
+              <>
+                <Link 
+                  to="/file-grievance" 
+                  className="px-8 py-3 rounded-md text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                >
+                  File a Grievance
+                </Link>
+                <Link 
+                  to="/how-it-works" 
+                  className="px-8 py-3 rounded-md text-base font-medium text-gray-900 bg-white hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                >
+                  Learn More
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link 
+                  to="/admin/dashboard" 
+                  className="px-8 py-3 rounded-md text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                >
+                  Manage Grievances
+                </Link>
+                <Link 
+                  to="/track-grievance" 
+                  className="px-8 py-3 rounded-md text-base font-medium text-gray-900 bg-white hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                >
+                  Track Grievances
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </section>

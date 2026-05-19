@@ -209,16 +209,23 @@ export const GrievanceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   useEffect(() => {
     if (!user) return;
     
+    const filter = user.role === 'admin' ? undefined : `user_id=eq.${user.id}`;
+    
+    const subscriptionArgs: any = {
+      event: '*',
+      schema: 'public',
+      table: 'grievances',
+    };
+    
+    if (filter) {
+      subscriptionArgs.filter = filter;
+    }
+    
     const subscription = supabase
       .channel('grievance-changes')
       .on(
         'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'grievances',
-          filter: `user_id=${user.id}`
-        },
+        subscriptionArgs,
         () => {
           fetchUserGrievances();
         }
@@ -243,7 +250,7 @@ export const GrievanceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       role: user.role
     });
     try {
-      const data = await fetchGrievances(user.id);
+      const data = await fetchGrievances(user.role === 'admin' ? undefined : user.id);
       console.log('Fetched grievances:', data);
       dispatch({ type: 'FETCH_GRIEVANCES_SUCCESS', payload: data });
     } catch (error) {

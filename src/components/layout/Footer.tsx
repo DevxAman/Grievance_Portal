@@ -1,8 +1,10 @@
 import React from 'react';
 import { Mail, Phone, MapPin, BookOpen } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth';
 
 const Footer: React.FC = () => {
+  const { user } = useAuth();
   return (
     <footer className="bg-gray-900 text-white pt-12 pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -44,11 +46,13 @@ const Footer: React.FC = () => {
                   Home
                 </Link>
               </li>
-              <li>
-                <Link to="/file-grievance" className="text-gray-300 hover:text-blue-400 transition-colors">
-                  File Grievance
-                </Link>
-              </li>
+              {user?.role !== 'admin' && (
+                <li>
+                  <Link to="/file-grievance" className="text-gray-300 hover:text-blue-400 transition-colors">
+                    File Grievance
+                  </Link>
+                </li>
+              )}
               <li>
                 <Link to="/track-grievance" className="text-gray-300 hover:text-blue-400 transition-colors">
                   Track Grievance

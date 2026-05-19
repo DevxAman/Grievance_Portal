@@ -4,8 +4,10 @@ import * as THREE from 'three';
 import { useSpring, animated } from '@react-spring/web';
 import BackgroundCarousel from './BackgroundCarousel';
 import { Book } from 'lucide-react';
+import { useAuth } from '../../hooks/useAuth';
 
 const HeroSection: React.FC = () => {
+  const { user } = useAuth();
   const mountRef = useRef<HTMLDivElement>(null);
   const animationFrameRef = useRef<number | null>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -244,17 +246,26 @@ const HeroSection: React.FC = () => {
         >
           <div className="backdrop-blur-xl bg-white/10 p-4 sm:p-6 rounded-xl shadow-2xl border border-white/20 max-w-2xl mx-auto">
             <div className="flex flex-col sm:flex-row sm:gap-4 md:gap-8 lg:gap-10 justify-center items-center">
-              <Link 
-                to="/file-grievance" 
-                className="w-full sm:w-auto flex-1 px-4 py-3 sm:py-4 mb-3 sm:mb-0 rounded-lg text-sm sm:text-base md:text-lg font-medium text-white bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-300 shadow-lg transform hover:translate-y-[-2px] hover:shadow-blue-500/30 text-center"
-              >
-                File a Grievance
-              </Link>
+              {user?.role !== 'admin' ? (
+                <Link 
+                  to="/file-grievance" 
+                  className="w-full sm:w-auto flex-1 px-4 py-3 sm:py-4 mb-3 sm:mb-0 rounded-lg text-sm sm:text-base md:text-lg font-medium text-white bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-300 shadow-lg transform hover:translate-y-[-2px] hover:shadow-blue-500/30 text-center"
+                >
+                  File a Grievance
+                </Link>
+              ) : (
+                <Link 
+                  to="/admin/dashboard" 
+                  className="w-full sm:w-auto flex-1 px-4 py-3 sm:py-4 mb-3 sm:mb-0 rounded-lg text-sm sm:text-base md:text-lg font-medium text-white bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-300 shadow-lg transform hover:translate-y-[-2px] hover:shadow-blue-500/30 text-center"
+                >
+                  Manage Grievances
+                </Link>
+              )}
               <Link 
                 to="/track-grievance" 
                 className="w-full sm:w-auto flex-1 px-4 py-3 sm:py-4 rounded-lg text-sm sm:text-base md:text-lg font-medium text-gray-800 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-all duration-300 shadow-lg transform hover:translate-y-[-2px] hover:shadow-white/30 text-center"
               >
-                Track Your Grievance
+                {user?.role === 'admin' ? 'Track Grievances' : 'Track Your Grievance'}
               </Link>
             </div>
           </div>

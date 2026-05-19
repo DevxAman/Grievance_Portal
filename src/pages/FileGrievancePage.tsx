@@ -14,6 +14,11 @@ const FileGrievancePage: React.FC = () => {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   
   useEffect(() => {
+    if (user?.role === 'admin') {
+      navigate('/admin/dashboard');
+      return;
+    }
+    
     // Auto-hide popup after 5 seconds
     let timer: NodeJS.Timeout;
     if (showPopup) {

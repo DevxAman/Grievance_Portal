@@ -50,7 +50,7 @@ const Navbar: React.FC = () => {
     { name: 'Home', path: '/', icon: Home },
     // Only show Dashboard if user is authenticated
     ...(user ? [{ name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard }] : []),
-    { name: 'File Grievance', path: '/file-grievance', icon: FileText },
+    ...(user?.role !== 'admin' ? [{ name: 'File Grievance', path: '/file-grievance', icon: FileText }] : []),
     { name: 'Track Grievance', path: '/track-grievance', icon: Search },
     { name: 'How It Works', path: '/how-it-works', icon: HelpCircle },
     { name: 'Contact', path: '/contact', icon: Mail },

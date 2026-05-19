@@ -10,7 +10,7 @@ import { AlertTriangle, CheckCircle2, FileSearch, Loader2, Trash2, Clock, Filter
 
 const TrackGrievancePage: React.FC = () => {
   const { grievances, fetchGrievances, sendReminder, deleteGrievance, loading, error, reminderCooldowns } = useGrievance();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [selectedGrievance, setSelectedGrievance] = useState<Grievance | null>(null);
@@ -252,7 +252,7 @@ const TrackGrievancePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-12 sm:py-16 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-2xl sm:text-3xl font-bold text-center text-gray-900 mt-10">Track Your Grievances</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-center text-gray-900 mt-10">Track Grievances</h1>
         
         {error && (
           <div className="mb-6 p-3 sm:p-4 bg-red-100 border border-red-400 text-red-700 rounded-md flex items-center">
@@ -403,15 +403,17 @@ const TrackGrievancePage: React.FC = () => {
             <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">No Grievances Found</h3>
             <p className="text-sm sm:text-base text-gray-600 mb-6">
               {filterStatus === 'all' 
-                ? "You haven't submitted any grievances yet." 
-                : `You don't have any ${filterStatus.replace('-', ' ')} grievances.`}
+                ? (user?.role === 'admin' ? "No grievances found in the system." : "You haven't submitted any grievances yet.")
+                : `No ${filterStatus.replace('-', ' ')} grievances found.`}
             </p>
-            <button
-              onClick={() => navigate('/file-grievance')}
-              className="px-4 py-2 bg-blue-600 text-white text-sm sm:text-base rounded-md hover:bg-blue-700 transition-colors"
-            >
-              File a New Grievance
-            </button>
+            {user?.role !== 'admin' && (
+              <button
+                onClick={() => navigate('/file-grievance')}
+                className="px-4 py-2 bg-blue-600 text-white text-sm sm:text-base rounded-md hover:bg-blue-700 transition-colors"
+              >
+                File a New Grievance
+              </button>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">

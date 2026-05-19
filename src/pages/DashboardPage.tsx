@@ -200,14 +200,16 @@ const DashboardPage: React.FC = () => {
         )}
         
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <button
-            onClick={() => navigate('/file-grievance')}
-            className="bg-white flex items-center justify-center p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow"
-          >
-            <FilePlus className="h-6 w-6 text-blue-600 mr-2" />
-            <span className="font-medium">File New Grievance</span>
-          </button>
+        <div className={`grid grid-cols-1 ${user?.role === 'admin' ? 'md:grid-cols-3' : 'md:grid-cols-4'} gap-4 mb-8`}>
+          {user?.role !== 'admin' && (
+            <button
+              onClick={() => navigate('/file-grievance')}
+              className="bg-white flex items-center justify-center p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow"
+            >
+              <FilePlus className="h-6 w-6 text-blue-600 mr-2" />
+              <span className="font-medium">File New Grievance</span>
+            </button>
+          )}
           
           <button
             onClick={() => navigate('/track-grievance')}
@@ -283,13 +285,19 @@ const DashboardPage: React.FC = () => {
                 <PlusCircle className="h-8 w-8 text-blue-600" />
               </div>
               <h3 className="text-lg font-semibold text-gray-800 mb-2">No Grievances Found</h3>
-              <p className="text-gray-600 mb-6">You haven't submitted any grievances yet.</p>
-              <button
-                onClick={() => navigate('/file-grievance')}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-              >
-                File Your First Grievance
-              </button>
+              <p className="text-gray-600 mb-6">
+                {user?.role === 'admin' 
+                  ? "No grievances found in the system." 
+                  : "You haven't submitted any grievances yet."}
+              </p>
+              {user?.role !== 'admin' && (
+                <button
+                  onClick={() => navigate('/file-grievance')}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                >
+                  File Your First Grievance
+                </button>
+              )}
             </div>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">

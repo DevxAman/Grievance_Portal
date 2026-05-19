@@ -1,8 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { FileText, Send, ChevronRight, Clock, User, BarChart, CheckCircle } from 'lucide-react';
+import { useAuth } from '../hooks/useAuth';
 
 const HowItWorksPage: React.FC = () => {
+  const { user } = useAuth();
   const steps = [
     {
       icon: <FileText className="h-12 w-12 text-blue-600" />,
@@ -92,13 +94,15 @@ const HowItWorksPage: React.FC = () => {
           </div>
           
           <div className="mt-12 text-center">
-            <Link
-              to="/file-grievance"
-              className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors"
-            >
-              File a Grievance
-              <ChevronRight className="ml-2 h-5 w-5" />
-            </Link>
+            {user?.role !== 'admin' && (
+              <Link
+                to="/file-grievance"
+                className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors"
+              >
+                File a Grievance
+                <ChevronRight className="ml-2 h-5 w-5" />
+              </Link>
+            )}
           </div>
         </div>
         
