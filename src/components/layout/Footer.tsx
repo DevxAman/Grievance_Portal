@@ -2,17 +2,20 @@ import React from 'react';
 import { Mail, Phone, MapPin, BookOpen } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import { canFileGrievance } from '../../lib/roles';
 
 const Footer: React.FC = () => {
   const { user } = useAuth();
   return (
-    <footer className="bg-gray-900 text-white pt-12 pb-8">
+    <footer className="bg-slate-950 text-white pt-14 pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
           {/* College Info */}
           <div className="col-span-1 md:col-span-1">
-            <div className="flex items-center mb-4">
-              <BookOpen className="h-8 w-8 text-blue-400" />
+            <div className="mb-4 flex items-center">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/15 text-blue-300 ring-1 ring-blue-300/20">
+                <BookOpen className="h-6 w-6" />
+              </div>
               <h3 className="ml-2 text-xl font-bold">GNDEC</h3>
             </div>
             <p className="text-gray-300 mb-4">
@@ -46,7 +49,7 @@ const Footer: React.FC = () => {
                   Home
                 </Link>
               </li>
-              {user?.role !== 'admin' && (
+              {canFileGrievance(user?.role) && (
                 <li>
                   <Link to="/file-grievance" className="text-gray-300 hover:text-blue-400 transition-colors">
                     File Grievance
@@ -108,7 +111,7 @@ const Footer: React.FC = () => {
           </div>
         </div>
         
-        <div className="mt-12 pt-8 border-t border-gray-700 text-center">
+        <div className="mt-12 border-t border-white/10 pt-8 text-center">
           <p className="text-sm text-gray-400">
             &copy; {new Date().getFullYear()} GNDEC Grievance Redressal Portal. All rights reserved.
           </p>

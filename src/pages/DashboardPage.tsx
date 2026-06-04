@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useGrievance } from '../hooks/useGrievance';
 import GrievanceCard from '../components/grievance/GrievanceCard';
@@ -10,9 +10,10 @@ import {
 import {
   forwardGrievance
 } from '../lib/api';
+import { canFileGrievance, isStaffRole } from '../lib/roles';
 import { 
   PlusCircle, FilePlus, BarChart3, HelpCircle, LogOut, Loader2, User, 
-  Mail, Calendar, Shield, BookOpen, Building, GraduationCap, Home
+  Mail, Calendar, Shield, BookOpen, Building, GraduationCap, Home, Building2
 } from 'lucide-react';
 
 const DashboardPage: React.FC = () => {
@@ -29,6 +30,11 @@ const DashboardPage: React.FC = () => {
     if (!isAuthenticated) {
       console.log('User not authenticated, redirecting to login');
       navigate('/login');
+      return;
+    }
+
+    if (user?.role === 'clerk') {
+      navigate('/clerk/dashboard');
       return;
     }
     
@@ -139,36 +145,63 @@ const handleForward = async (
     );
   }
 };
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="mb-10">
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-          {user && (
-            <div className="mt-2 text-gray-600 flex items-center">
-              <span>Welcome back, </span>
-              <Link to="/dashboard" className="flex items-center ml-1 text-blue-600 hover:text-blue-800 font-semibold transition-colors">
-                <User className="h-4 w-4 mr-1" />
-                <span>{user.name || user.user_id || 'User'}</span>
-              </Link>
-            </div>
-          )}
-        </div>
+  const dashboardSubtitle =
+    user?.role === 'dsw'
+      ? 'Oversee grievance workflow, categorization, and institutional redressal activity.'
+      : user?.role === 'student'
+        ? 'View your profile, track grievances, and manage your submissions in one place.'
+        : 'Your personal workspace on the GNDEC Grievance Redressal Portal.';
 
+  return (
+    <div className="app-shell min-h-screen">
+      <div className="border-b border-slate-200/80 bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 pt-16 md:pt-20">
+        <div className="section-container py-8 sm:py-10">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-blue-200">
+                <Building2 className="h-3.5 w-3.5" />
+                GNDEC Grievance Portal
+              </div>
+              <h1 className="text-2xl font-extrabold tracking-tight text-white sm:text-3xl">
+                Dashboard
+              </h1>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">
+                {dashboardSubtitle}
+              </p>
+            </div>
+            {user && (
+              <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-sm">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-600 text-lg font-bold text-white">
+                  {(user.name || user.user_id).charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-white">{user.name || user.user_id}</p>
+                  <p className="flex items-center gap-1 text-xs capitalize text-blue-200">
+                    <Shield className="h-3 w-3" />
+                    {user.role}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="section-container py-10 sm:py-12">
         {/* User Profile Section */}
         {user && (
-          <div className="mb-10 bg-white rounded-xl shadow-md overflow-hidden">
+          <div className="surface-card mb-10 overflow-hidden">
             <div className="md:flex">
-              <div className="md:shrink-0 bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center p-6 md:p-8">
-                <div className="h-20 w-20 rounded-full bg-white text-blue-600 flex items-center justify-center text-3xl font-bold">
+              <div className="flex items-center justify-center bg-gradient-to-br from-blue-600 via-blue-700 to-slate-900 p-6 md:shrink-0 md:p-8">
+                <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-white text-3xl font-black text-blue-700 shadow-xl">
                   {user.name ? user.name.charAt(0).toUpperCase() : user.user_id.charAt(0).toUpperCase()}
                 </div>
               </div>
               <div className="p-6 md:p-8 w-full">
-                <div className="uppercase tracking-wide text-sm text-indigo-500 font-semibold mb-1">
+                <div className="mb-1 text-sm font-bold uppercase tracking-widest text-blue-600">
                   User Profile
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">{user.name || 'N/A'}</h2>
+                <h2 className="mb-5 text-2xl font-extrabold text-slate-950">{user.name || 'N/A'}</h2>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="flex items-start">
@@ -261,11 +294,11 @@ const handleForward = async (
         )}
         
         {/* Quick Actions */}
-        <div className={`grid grid-cols-1 ${user?.role === 'admin' ? 'md:grid-cols-3' : 'md:grid-cols-4'} gap-4 mb-8`}>
-          {user?.role !== 'admin' && (
-            <button
+        <div className={`grid grid-cols-1 ${isStaffRole(user?.role) ? 'md:grid-cols-3' : 'md:grid-cols-4'} gap-4 mb-8`}>
+          {canFileGrievance(user?.role) && (
+          <button
               onClick={() => navigate('/file-grievance')}
-              className="bg-white flex items-center justify-center p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow"
+              className="surface-card-compact flex items-center justify-center p-6 transition-all hover:-translate-y-0.5 hover:shadow-lg"
             >
               <FilePlus className="h-6 w-6 text-blue-600 mr-2" />
               <span className="font-medium">File New Grievance</span>
@@ -274,7 +307,7 @@ const handleForward = async (
           
           <button
             onClick={() => navigate('/track-grievance')}
-            className="bg-white flex items-center justify-center p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow"
+            className="surface-card-compact flex items-center justify-center p-6 transition-all hover:-translate-y-0.5 hover:shadow-lg"
           >
             <BarChart3 className="h-6 w-6 text-green-600 mr-2" />
             <span className="font-medium">Track Grievances</span>
@@ -282,7 +315,7 @@ const handleForward = async (
           
           <button
             onClick={() => navigate('/how-it-works')}
-            className="bg-white flex items-center justify-center p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow"
+            className="surface-card-compact flex items-center justify-center p-6 transition-all hover:-translate-y-0.5 hover:shadow-lg"
           >
             <HelpCircle className="h-6 w-6 text-purple-600 mr-2" />
             <span className="font-medium">How It Works</span>
@@ -290,7 +323,7 @@ const handleForward = async (
           
           <button
             onClick={handleLogout}
-            className="bg-white flex items-center justify-center p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow"
+            className="surface-card-compact flex items-center justify-center p-6 transition-all hover:-translate-y-0.5 hover:shadow-lg"
           >
             <LogOut className="h-6 w-6 text-red-600 mr-2" />
             <span className="font-medium">Logout</span>
@@ -299,22 +332,22 @@ const handleForward = async (
         
         {/* Statistics */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
-          <div className="bg-blue-50 p-6 rounded-lg border border-blue-100">
+          <div className="metric-card border-blue-100 bg-blue-50">
             <div className="text-3xl font-bold text-blue-700 mb-1">{totalGrievances}</div>
             <div className="text-sm text-blue-600">Total Grievances</div>
           </div>
           
-          <div className="bg-yellow-50 p-6 rounded-lg border border-yellow-100">
+          <div className="metric-card border-amber-100 bg-amber-50">
             <div className="text-3xl font-bold text-yellow-700 mb-1">{pendingCount}</div>
             <div className="text-sm text-yellow-600">Pending Grievances</div>
           </div>
           
-          <div className="bg-green-50 p-6 rounded-lg border border-green-100">
+          <div className="metric-card border-green-100 bg-green-50">
             <div className="text-3xl font-bold text-green-700 mb-1">{resolvedCount}</div>
             <div className="text-sm text-green-600">Resolved Grievances</div>
           </div>
           
-          <div className="bg-red-50 p-6 rounded-lg border border-red-100">
+          <div className="metric-card border-red-100 bg-red-50">
             <div className="text-3xl font-bold text-red-700 mb-1">{rejectedCount}</div>
             <div className="text-sm text-red-600">Rejected Grievances</div>
           </div>
@@ -323,7 +356,7 @@ const handleForward = async (
         {/* Recent Grievances */}
         <div className="mb-12">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-semibold text-gray-900">Recent Grievances</h2>
+            <h2 className="text-xl font-extrabold text-slate-950">Recent Grievances</h2>
             <button
               onClick={() => navigate('/track-grievance')}
               className="flex items-center text-blue-600 hover:text-blue-800"
@@ -336,12 +369,12 @@ const handleForward = async (
           </div>
           
           {loading ? (
-            <div className="flex flex-col items-center justify-center p-12 bg-white rounded-lg shadow-md">
+            <div className="surface-card flex flex-col items-center justify-center p-12">
               <Loader2 className="h-10 w-10 text-blue-500 animate-spin mb-4" />
               <p className="text-gray-600">Loading your grievances...</p>
             </div>
           ) : grievances.length === 0 ? (
-            <div className="bg-white p-12 rounded-lg shadow-md text-center">
+            <div className="surface-card p-12 text-center">
               <div className="inline-block p-3 rounded-full bg-blue-100 mb-4">
                 <PlusCircle className="h-8 w-8 text-blue-600" />
               </div>
@@ -351,7 +384,7 @@ const handleForward = async (
                   ? "No grievances found in the system." 
                   : "You haven't submitted any grievances yet."}
               </p>
-              {user?.role !== 'admin' && (
+              {canFileGrievance(user?.role) && (
                 <button
                   onClick={() => navigate('/file-grievance')}
                   className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"

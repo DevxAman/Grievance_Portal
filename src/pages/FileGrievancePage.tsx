@@ -3,19 +3,22 @@ import { useNavigate } from 'react-router-dom';
 import GrievanceForm from '../components/grievance/GrievanceForm';
 import { useGrievance } from '../hooks/useGrievance';
 import { useAuth } from '../hooks/useAuth';
-import { CheckCircle, AlertCircle, X } from 'lucide-react';
+import { canFileGrievance, getDashboardPathForRole } from '../lib/roles';
+import { CheckCircle, AlertCircle, X, Clock3, ShieldCheck, FileText } from 'lucide-react';
 
 const FileGrievancePage: React.FC = () => {
-  const { submitNewGrievance, error, loading } = useGrievance();
+  const { submitNewGrievance, error } = useGrievance();
   const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formResetKey, setFormResetKey] = useState(0);
   
   useEffect(() => {
-    if (user?.role === 'admin') {
-      navigate('/admin/dashboard');
+    if (user && !canFileGrievance(user.role)) {
+      navigate(getDashboardPathForRole(user.role));
       return;
     }
     
@@ -27,7 +30,7 @@ const FileGrievancePage: React.FC = () => {
       }, 5000);
     }
     return () => clearTimeout(timer);
-  }, [showPopup]);
+  }, [showPopup, user, navigate]);
   
   const handleSubmit = async (formData: FormData) => {
     if (!isAuthenticated || !user) {
@@ -35,6 +38,7 @@ const FileGrievancePage: React.FC = () => {
       return;
     }
     
+    setIsSubmitting(true);
     try {
       const grievanceData = await submitNewGrievance(formData);
       console.log('Grievance submitted successfully:', grievanceData);
@@ -43,6 +47,9 @@ const FileGrievancePage: React.FC = () => {
       setShowPopup(true);
     } catch (err) {
       console.error('Failed to submit grievance:', err);
+      throw err;
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -53,17 +60,19 @@ const FileGrievancePage: React.FC = () => {
   const handleRefreshForm = () => {
     setIsSubmitted(false);
     setShowSuccessModal(false);
+    setShowPopup(false);
+    setFormResetKey((key) => key + 1);
     navigate('/file-grievance');
     window.scrollTo(0, 0);
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-20 px-4 sm:px-6 lg:px-8">
+    <div className="app-shell px-4 py-24 sm:px-6 lg:px-8">
       {/* Success Modal Notification */}
       {showSuccessModal && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div className="fixed inset-0 bg-black bg-opacity-50" onClick={handleCloseModal}></div>
-          <div className="relative bg-white rounded-lg shadow-lg p-6 w-full max-w-md mx-auto z-50">
+          <div className="relative z-50 mx-auto w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
             <div className="flex flex-col items-center text-center">
               <div className="mx-auto h-20 w-20 bg-green-100 rounded-full flex items-center justify-center mb-6">
                 <CheckCircle className="h-12 w-12 text-green-600" />
@@ -71,7 +80,7 @@ const FileGrievancePage: React.FC = () => {
               <h2 className="text-2xl font-bold text-gray-800 mb-4">Grievance has been filed successfully!</h2>
               <button
                 onClick={handleCloseModal}
-                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium transition-colors"
+                className="btn-primary px-8"
               >
                 OK
               </button>
@@ -82,7 +91,7 @@ const FileGrievancePage: React.FC = () => {
       
       {/* Success Popup Notification */}
       {showPopup && !showSuccessModal && (
-        <div className="fixed top-20 right-4 md:right-6 bg-green-50 border-l-4 border-green-500 p-4 rounded shadow-lg w-80 md:w-96 z-50 animate-fade-in-right">
+        <div className="fixed right-4 top-20 z-50 w-80 animate-fade-in-right rounded-2xl border border-green-200 bg-green-50 p-4 shadow-xl md:right-6 md:w-96">
           <div className="flex items-start">
             <div className="flex-shrink-0">
               <CheckCircle className="h-5 w-5 text-green-500" />
@@ -105,9 +114,9 @@ const FileGrievancePage: React.FC = () => {
         </div>
       )}
       
-      <div className="max-w-3xl mx-auto">
+      <div className="mx-auto max-w-6xl">
         {error && (
-          <div className="mb-6 p-4 bg-red-100 border-l-4 border-red-500 rounded-md flex items-start">
+          <div className="mb-6 flex items-start rounded-2xl border border-red-200 bg-red-50 p-4">
             <AlertCircle className="h-5 w-5 text-red-500 mr-2 flex-shrink-0 mt-0.5" />
             <div>
               <p className="font-medium text-red-800">Submission Error</p>
@@ -116,15 +125,15 @@ const FileGrievancePage: React.FC = () => {
           </div>
         )}
         
-        {loading && (
-          <div className="mb-6 p-4 bg-blue-100 border-l-4 border-blue-500 rounded-md flex items-center">
+        {isSubmitting && (
+          <div className="mb-6 flex items-center rounded-2xl border border-blue-200 bg-blue-50 p-4">
             <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-700 mr-3"></div>
             <p className="text-blue-700 font-medium">Submitting your grievance...</p>
           </div>
         )}
         
         {isSubmitted && !showSuccessModal ? (
-          <div className="bg-white p-8 rounded-lg shadow-lg text-center">
+          <div className="surface-card mx-auto max-w-2xl p-8 text-center">
             <div className="mx-auto h-20 w-20 bg-green-100 rounded-full flex items-center justify-center mb-6">
               <CheckCircle className="h-12 w-12 text-green-600" />
             </div>
@@ -135,13 +144,13 @@ const FileGrievancePage: React.FC = () => {
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <button
                 onClick={() => navigate('/dashboard')}
-                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium transition-colors"
+                className="btn-primary"
               >
                 Go to Dashboard
               </button>
               <button
                 onClick={handleRefreshForm}
-                className="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-md font-medium transition-colors"
+                className="btn-secondary"
               >
                 File Another Grievance
               </button>
@@ -149,22 +158,32 @@ const FileGrievancePage: React.FC = () => {
           </div>
         ) : (
           <>
-            <h1 className="text-3xl font-bold text-center text-gray-900 mt-10">File a New Grievance</h1>
-            <p className="mb-8 text-gray-600 text-center max-w-2xl mx-auto">
-              Please provide detailed information about your grievance. The more specific you are, the better we can assist you in resolving the issue.
-            </p>
-            
-            {/* About to File a New Grievance Button */}
-            <div className="mb-6 flex justify-center">
-              <button
-                onClick={handleRefreshForm}
-                className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium transition-colors"
-              >
-                About to File a New Grievance
-              </button>
+            <div className="mb-10 text-center">
+              <span className="page-kicker">Student support</span>
+              <h1 className="page-title mt-4">File a New Grievance</h1>
+              <p className="page-subtitle mx-auto">
+                Submit a clear concern with supporting details. Your ticket is routed to the appropriate authority and remains trackable from your dashboard.
+              </p>
             </div>
-            
-            <GrievanceForm onSubmit={handleSubmit} key={Date.now()} />
+
+            <div className="grid gap-8 lg:grid-cols-[1fr_22rem] lg:items-start">
+              <GrievanceForm onSubmit={handleSubmit} key={formResetKey} />
+              <aside className="space-y-4">
+                {[
+                  { icon: FileText, title: 'Be specific', text: 'Mention course, department, location, dates, and people involved where relevant.' },
+                  { icon: ShieldCheck, title: 'Confidential handling', text: 'Only authorized staff can access your submission and uploaded documents.' },
+                  { icon: Clock3, title: 'Track progress', text: 'After submission, use Track Grievance to monitor status updates and responses.' },
+                ].map((item) => (
+                  <div key={item.title} className="surface-card-compact p-5">
+                    <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                      <item.icon className="h-5 w-5" />
+                    </div>
+                    <h3 className="font-bold text-slate-900">{item.title}</h3>
+                    <p className="mt-2 text-sm leading-6 text-slate-600">{item.text}</p>
+                  </div>
+                ))}
+              </aside>
+            </div>
           </>
         )}
       </div>

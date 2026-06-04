@@ -22,7 +22,7 @@ const SignupPage: React.FC = () => {
   });
 
   return (
-    <div className="relative min-h-screen pt-16">
+    <div className="relative min-h-screen bg-slate-950 pt-16">
       {/* Background Carousel */}
       <BackgroundCarousel 
         externalSlide={currentSlide}
@@ -32,13 +32,16 @@ const SignupPage: React.FC = () => {
       {/* Content */}
       <div className="relative z-40 container mx-auto px-4 sm:px-6 lg:px-8 py-16 flex items-center justify-center min-h-[calc(100vh-4rem)]">
         <div className="w-full max-w-md">
-          <animated.div style={fadeIn} className="text-center mb-8">
-            <h1 className="text-3xl md:text-4xl font-bold text-white mb-4 drop-shadow-lg">
+          <animated.div style={fadeIn} className="mb-8 text-center">
+            <span className="inline-flex items-center rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-blue-100 backdrop-blur-md">
+              GNDEC portal
+            </span>
+            <h1 className="mb-4 mt-4 text-3xl font-extrabold text-white drop-shadow-lg md:text-4xl">
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-white">
                 Create your account
               </span>
             </h1>
-            <p className="text-lg text-gray-100 max-w-xl mx-auto">
+            <p className="mx-auto max-w-xl text-base leading-7 text-white/75 sm:text-lg">
               Join the GNDEC Grievance Redressal Portal
             </p>
           </animated.div>

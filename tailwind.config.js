@@ -11,6 +11,21 @@ export default {
       '2xl': '1536px',
     },
     extend: {
+      colors: {
+        brand: {
+          50: '#eff6ff',
+          100: '#dbeafe',
+          500: '#2563eb',
+          600: '#1d4ed8',
+          700: '#1e40af',
+          900: '#172554',
+        },
+        ink: {
+          900: '#0f172a',
+          700: '#334155',
+          500: '#64748b',
+        },
+      },
       fontSize: {
         'xxs': '0.625rem', // 10px
         'xs': '0.75rem',   // 12px
@@ -75,6 +90,8 @@ export default {
       },
       boxShadow: {
         'inner-lg': 'inset 0 2px 10px 0 rgba(0, 0, 0, 0.1)',
+        'soft': '0 18px 55px rgba(15, 23, 42, 0.08)',
+        'glow': '0 18px 45px rgba(37, 99, 235, 0.22)',
       },
       maxWidth: {
         'xxs': '16rem',

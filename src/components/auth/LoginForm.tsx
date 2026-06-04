@@ -47,10 +47,10 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
   };
 
   return (
-    <div className="bg-black/40 backdrop-blur-xl p-8 rounded-xl shadow-2xl border border-white/10">
+    <div className="glass-card p-6 sm:p-8">
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label htmlFor="user_id" className="block text-gray-200 mb-2 flex items-center">
+          <label htmlFor="user_id" className="mb-2 flex items-center text-sm font-bold text-white/85">
             <User className="w-5 h-5 mr-2 text-blue-300" />
             User ID
           </label>
@@ -60,9 +60,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
               type="text"
               value={user_id}
               onChange={(e) => setUserId(e.target.value)}
-              className={`w-full px-4 py-3 bg-white/10 backdrop-blur-sm border ${
-                errors.user_id ? 'border-red-500' : 'border-white/20'
-              } rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500`}
+              className={`form-input-dark ${
+                errors.user_id ? 'border-red-400 focus:border-red-300 focus:ring-red-300/20' : ''
+              }`}
               placeholder="Ex: ravi_k12"
             />
           </div>
@@ -75,7 +75,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
         </div>
         
         <div>
-          <label htmlFor="password" className="block text-gray-200 mb-2 flex items-center">
+          <label htmlFor="password" className="mb-2 flex items-center text-sm font-bold text-white/85">
             <Lock className="w-5 h-5 mr-2 text-blue-300" />
             Password
           </label>
@@ -85,10 +85,10 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
               type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className={`w-full px-4 py-3 bg-white/10 backdrop-blur-sm border ${
-                errors.password ? 'border-red-500' : 'border-white/20'
-              } rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10`}
-              placeholder="••••••••"
+              className={`form-input-dark pr-10 ${
+                errors.password ? 'border-red-400 focus:border-red-300 focus:ring-red-300/20' : ''
+              }`}
+              placeholder="Password"
             />
             <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
               <button
@@ -113,7 +113,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
             <input
               id="remember-me"
               type="checkbox"
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              className="h-4 w-4 rounded border-white/30 bg-white/10 text-blue-600 focus:ring-blue-500"
             />
             <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-200">
               Remember me
@@ -121,7 +121,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
           </div>
           
           <div className="text-sm">
-            <a href="#" className="font-medium text-blue-300 hover:text-blue-200 transition-colors">
+            <a href="#" className="font-semibold text-blue-300 hover:text-blue-200 transition-colors">
               Forgot password?
             </a>
           </div>
@@ -130,7 +130,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
         <div>
           <button
             type="submit"
-            className="w-full flex items-center justify-center py-3 px-6 rounded-lg text-white bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 transition-all duration-300 shadow-lg transform hover:translate-y-[-2px] font-medium"
+            className="btn-primary w-full bg-gradient-to-r from-blue-500 to-blue-700 py-3.5 text-base shadow-blue-950/40"
           >
             Sign In <ArrowRight className="w-5 h-5 ml-2" />
           </button>
@@ -140,7 +140,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
       <div className="mt-8 text-center">
         <p className="text-sm text-gray-300">
           Don't have an account?{' '}
-          <Link to="/signup" className="font-medium text-blue-300 hover:text-blue-200 transition-colors">
+          <Link to="/signup" className="font-bold text-blue-300 hover:text-blue-200 transition-colors">
             Sign up now
           </Link>
         </p>

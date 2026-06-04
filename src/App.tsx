@@ -20,6 +20,7 @@ import HowItWorksPage from './pages/HowItWorksPage';
 import ContactPage from './pages/ContactPage';
 import DevelopersPage from './pages/DevelopersPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
+import ClerkDashboardPage from './pages/ClerkDashboardPage';
 const App: React.FC = () => {
   return (
     <AuthProvider>
@@ -40,6 +41,7 @@ const App: React.FC = () => {
                 <Route path="/contact" element={<ContactPage />} />
                 <Route path="/developers" element={<DevelopersPage />} />
                 <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+                <Route path="/clerk/dashboard" element={<ClerkDashboardPage />} />
                 
                 {/* Add a catch-all route */}
                 <Route path="*" element={<Navigate to="/" replace />} />

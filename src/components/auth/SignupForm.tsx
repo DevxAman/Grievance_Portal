@@ -152,7 +152,7 @@ const SignupForm: React.FC = () => {
   };
 
   return (
-    <div className="bg-black/40 backdrop-blur-xl p-8 rounded-xl shadow-2xl border border-white/10">
+    <div className="glass-card p-6 sm:p-8">
       {showOtpInput ? (
         <form onSubmit={handleVerify} className="space-y-6">
           <h2 className="text-2xl font-bold text-white mb-6 text-center">
@@ -177,7 +177,7 @@ const SignupForm: React.FC = () => {
           </p>
           
           <div>
-            <label htmlFor="otp" className="block text-gray-200 mb-2 flex items-center">
+            <label htmlFor="otp" className="mb-2 flex items-center text-sm font-bold text-white/85">
               <Key className="w-5 h-5 mr-2 text-blue-300" />
               Verification Code
             </label>
@@ -186,9 +186,9 @@ const SignupForm: React.FC = () => {
               type="text"
               value={otp}
               onChange={(e) => setOtp(e.target.value)}
-              className={`w-full px-4 py-3 bg-white/10 backdrop-blur-sm border ${
-                errors.otp ? 'border-red-500' : 'border-white/20'
-              } rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500`}
+              className={`form-input-dark ${
+                errors.otp ? 'border-red-400 focus:border-red-300 focus:ring-red-300/20' : ''
+              }`}
               placeholder="Enter 6-digit code"
               maxLength={6}
             />
@@ -203,7 +203,7 @@ const SignupForm: React.FC = () => {
           <button
             type="submit"
             disabled={loading || authLoading}
-            className={`w-full flex items-center justify-center py-3 px-6 rounded-lg text-white bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 transition-all duration-300 shadow-lg transform hover:translate-y-[-2px] font-medium ${
+            className={`btn-primary w-full bg-gradient-to-r from-blue-500 to-blue-700 py-3.5 text-base shadow-blue-950/40 ${
               (loading || authLoading) ? 'opacity-70 cursor-not-allowed' : ''
             }`}
           >
@@ -239,7 +239,7 @@ const SignupForm: React.FC = () => {
           )}
           
           <div>
-            <label htmlFor="user_id" className="block text-gray-200 mb-2 flex items-center">
+            <label htmlFor="user_id" className="mb-2 flex items-center text-sm font-bold text-white/85">
               <User className="w-5 h-5 mr-2 text-blue-300" />
               User ID
             </label>
@@ -248,9 +248,9 @@ const SignupForm: React.FC = () => {
               type="text"
               value={user_id}
               onChange={(e) => setUserId(e.target.value)}
-              className={`w-full px-4 py-3 bg-white/10 backdrop-blur-sm border ${
-                errors.user_id ? 'border-red-500' : 'border-white/20'
-              } rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500`}
+              className={`form-input-dark ${
+                errors.user_id ? 'border-red-400 focus:border-red-300 focus:ring-red-300/20' : ''
+              }`}
               placeholder="Ex: ravi_k12"
             />
             {errors.user_id && (
@@ -262,7 +262,7 @@ const SignupForm: React.FC = () => {
           </div>
           
           <div>
-            <label htmlFor="email" className="block text-gray-200 mb-2 flex items-center">
+            <label htmlFor="email" className="mb-2 flex items-center text-sm font-bold text-white/85">
               <Mail className="w-5 h-5 mr-2 text-blue-300" />
               Email
             </label>
@@ -271,9 +271,9 @@ const SignupForm: React.FC = () => {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className={`w-full px-4 py-3 bg-white/10 backdrop-blur-sm border ${
-                errors.email ? 'border-red-500' : 'border-white/20'
-              } rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500`}
+              className={`form-input-dark ${
+                errors.email ? 'border-red-400 focus:border-red-300 focus:ring-red-300/20' : ''
+              }`}
               placeholder="your.name@gndec.ac.in"
             />
             {errors.email && (
@@ -285,7 +285,7 @@ const SignupForm: React.FC = () => {
           </div>
           
           <div className="relative">
-            <label htmlFor="password" className="block text-gray-200 mb-2 flex items-center">
+            <label htmlFor="password" className="mb-2 flex items-center text-sm font-bold text-white/85">
               <Lock className="w-5 h-5 mr-2 text-blue-300" />
               Password
             </label>
@@ -295,10 +295,10 @@ const SignupForm: React.FC = () => {
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className={`w-full px-4 py-3 bg-white/10 backdrop-blur-sm border ${
-                  errors.password ? 'border-red-500' : 'border-white/20'
-                } rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                placeholder="•••••••••••"
+                className={`form-input-dark pr-10 ${
+                  errors.password ? 'border-red-400 focus:border-red-300 focus:ring-red-300/20' : ''
+                }`}
+                placeholder="Password"
               />
               <button
                 type="button"
@@ -321,7 +321,7 @@ const SignupForm: React.FC = () => {
           </div>
           
           <div>
-            <label htmlFor="confirmPassword" className="block text-gray-200 mb-2 flex items-center">
+            <label htmlFor="confirmPassword" className="mb-2 flex items-center text-sm font-bold text-white/85">
               <Lock className="w-5 h-5 mr-2 text-blue-300" />
               Confirm Password
             </label>
@@ -330,10 +330,10 @@ const SignupForm: React.FC = () => {
               type={showPassword ? "text" : "password"}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className={`w-full px-4 py-3 bg-white/10 backdrop-blur-sm border ${
-                errors.confirmPassword ? 'border-red-500' : 'border-white/20'
-              } rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500`}
-              placeholder="•••••••••••"
+              className={`form-input-dark ${
+                errors.confirmPassword ? 'border-red-400 focus:border-red-300 focus:ring-red-300/20' : ''
+              }`}
+              placeholder="Confirm password"
             />
             {errors.confirmPassword && (
               <p className="mt-1 text-red-400 text-sm flex items-center">
@@ -346,7 +346,7 @@ const SignupForm: React.FC = () => {
           <button
             type="submit"
             disabled={loading || authLoading}
-            className={`w-full flex items-center justify-center py-3 px-6 rounded-lg text-white bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 transition-all duration-300 shadow-lg transform hover:translate-y-[-2px] font-medium ${
+            className={`btn-primary w-full bg-gradient-to-r from-blue-500 to-blue-700 py-3.5 text-base shadow-blue-950/40 ${
               (loading || authLoading) ? 'opacity-70 cursor-not-allowed' : ''
             }`}
           >

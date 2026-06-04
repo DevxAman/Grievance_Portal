@@ -26,13 +26,13 @@ const StatItem: React.FC<StatProps> = ({ number, label, delay }) => {
       transform: inView ? 'translateY(0px)' : 'translateY(50px)',
     },
     delay,
-    config: { tension: 100, friction: 20 },
+    config: { tension: 120, friction: 22 },
   });
 
   useEffect(() => {
     if (inView) {
       gsap.to(`#stat-${label.replace(/\s+/g, '-')}`, {
-        scale: 1.1,
+        scale: 1.05,
         duration: 0.3,
         yoyo: true,
         repeat: 1,
@@ -45,15 +45,20 @@ const StatItem: React.FC<StatProps> = ({ number, label, delay }) => {
     <animated.div
       ref={ref}
       style={props}
-      className="text-center p-6"
+      className="group relative bg-white/5 backdrop-blur-xl rounded-2xl p-8 border border-white/10 shadow-xl hover:bg-white/10 hover:border-white/20 hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between overflow-hidden min-h-[140px]"
     >
-      <div 
-        id={`stat-${label.replace(/\s+/g, '-')}`}
-        className="text-4xl md:text-5xl font-bold text-white mb-2 transform transition-transform"
-      >
-        {number}
+      {/* Dynamic ambient backdrop glowing ring */}
+      <div className="absolute -inset-10 bg-gradient-to-br from-blue-500/10 to-indigo-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-full blur-2xl pointer-events-none"></div>
+      
+      <div className="relative z-10">
+        <div 
+          id={`stat-${label.replace(/\s+/g, '-')}`}
+          className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-blue-100 mb-2 transform tracking-tight"
+        >
+          {number}
+        </div>
+        <div className="text-blue-200 text-sm md:text-base font-semibold group-hover:text-white transition-colors duration-300">{label}</div>
       </div>
-      <div className="text-blue-100 text-sm md:text-base">{label}</div>
     </animated.div>
   );
 };
@@ -189,19 +194,21 @@ const AnimatedStats: React.FC = () => {
   };
 
   return (
-    <section className="relative py-20 bg-gradient-to-br from-blue-700 to-blue-900 overflow-hidden">
+    <section className="relative py-24 bg-slate-950 overflow-hidden border-y border-slate-900">
       <AnimatedBackground />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center mb-10">
-          <h2 className="text-3xl font-bold text-white">Live Statistics</h2>
+        <div className="flex justify-between items-center mb-12">
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-300 tracking-tight">
+            Live Statistics
+          </h2>
           
           <button 
             onClick={handleRefresh}
             disabled={loading || isRefreshing}
-            className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 focus:ring-2 focus:ring-white/30 rounded-lg text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-5 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 focus:ring-2 focus:ring-white/10 rounded-full text-white transition-all duration-300 shadow-xl disabled:opacity-50 disabled:cursor-not-allowed text-sm font-semibold"
           >
-            <RefreshCw className={`h-5 w-5 ${isRefreshing ? 'animate-spin' : ''}`} />
-            <span>Refresh</span>
+            <RefreshCw className={`h-4.5 w-4.5 text-blue-400 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <span>Refresh Data</span>
           </button>
         </div>
         
@@ -216,7 +223,7 @@ const AnimatedStats: React.FC = () => {
           ))}
         </div>
         
-        <div className="text-center mt-8 text-blue-200 text-sm opacity-70">
+        <div className="text-center mt-10 text-slate-500 text-xs tracking-wider uppercase font-mono">
           {getLastUpdated()}
         </div>
       </div>

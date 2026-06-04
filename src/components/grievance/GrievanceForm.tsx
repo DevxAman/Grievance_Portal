@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { FileUp, AlertTriangle } from 'lucide-react';
+import { FileUp, AlertTriangle, Send, Tag, FileText } from 'lucide-react';
 
 interface GrievanceFormProps {
-  onSubmit: (formData: FormData) => void;
+  onSubmit: (formData: FormData) => Promise<void> | void;
 }
 
 const GrievanceForm: React.FC<GrievanceFormProps> = ({ onSubmit }) => {
@@ -15,6 +15,10 @@ const GrievanceForm: React.FC<GrievanceFormProps> = ({ onSubmit }) => {
   const [files, setFiles] = useState<FileList | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const MAX_FILES = 5;
+  const MAX_FILE_SIZE = 10 * 1024 * 1024;
+  const allowedFileTypes = ['image/png', 'image/jpeg', 'application/pdf'];
   
   // Reset form when component key changes
   useEffect(() => {
@@ -40,10 +44,64 @@ const GrievanceForm: React.FC<GrievanceFormProps> = ({ onSubmit }) => {
     setFormData({ ...formData, [name]: value });
   };
   
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setFiles(e.target.files);
+  const validateFiles = (selectedFiles: FileList | null) => {
+    if (!selectedFiles || selectedFiles.length === 0) return '';
+
+    if (selectedFiles.length > MAX_FILES) {
+      return `You can upload a maximum of ${MAX_FILES} files.`;
     }
+
+    const invalidFile = Array.from(selectedFiles).find(
+      (file) => !allowedFileTypes.includes(file.type)
+    );
+    if (invalidFile) {
+      return 'Only PNG, JPG, JPEG, and PDF files are allowed.';
+    }
+
+    const oversizedFile = Array.from(selectedFiles).find(
+      (file) => file.size > MAX_FILE_SIZE
+    );
+    if (oversizedFile) {
+      return 'Each file must be 10MB or smaller.';
+    }
+
+    return '';
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = e.target.files;
+    const fileError = validateFiles(selectedFiles);
+
+    setErrors((currentErrors) => ({
+      ...currentErrors,
+      documents: fileError,
+    }));
+
+    if (fileError) {
+      setFiles(null);
+      e.target.value = '';
+      return;
+    }
+
+    setFiles(selectedFiles && selectedFiles.length > 0 ? selectedFiles : null);
+  };
+
+  const handleFileDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const selectedFiles = e.dataTransfer.files;
+    const fileError = validateFiles(selectedFiles);
+
+    setErrors((currentErrors) => ({
+      ...currentErrors,
+      documents: fileError,
+    }));
+
+    if (fileError) {
+      setFiles(null);
+      return;
+    }
+
+    setFiles(selectedFiles && selectedFiles.length > 0 ? selectedFiles : null);
   };
   
   const validateForm = () => {
@@ -57,6 +115,11 @@ const GrievanceForm: React.FC<GrievanceFormProps> = ({ onSubmit }) => {
       newErrors.description = 'Description is required';
     } else if (formData.description.trim().length < 50) {
       newErrors.description = 'Description should be at least 50 characters';
+    }
+
+    const fileError = validateFiles(files);
+    if (fileError) {
+      newErrors.documents = fileError;
     }
     
     setErrors(newErrors);
@@ -87,7 +150,7 @@ const GrievanceForm: React.FC<GrievanceFormProps> = ({ onSubmit }) => {
       }
       
       // Call the onSubmit prop with the form data
-      onSubmit(submissionData);
+      await onSubmit(submissionData);
       
       // Reset form after submission
       setFormData({
@@ -110,12 +173,19 @@ const GrievanceForm: React.FC<GrievanceFormProps> = ({ onSubmit }) => {
   };
   
   return (
-    <div className="bg-white p-8 rounded-lg shadow-lg max-w-3xl w-full">
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">File a New Grievance</h2>
+    <div className="surface-card w-full p-6 sm:p-8">
+      <div className="mb-7 border-b border-slate-100 pb-5">
+        <span className="page-kicker">Secure submission</span>
+        <h2 className="mt-3 text-2xl font-extrabold tracking-tight text-slate-950">Tell us what happened</h2>
+        <p className="mt-2 text-sm leading-6 text-slate-600">
+          Add a clear title, choose the closest category, and describe the issue with enough detail for the right team to act.
+        </p>
+      </div>
       
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="title" className="form-label">
+            <FileText className="h-4 w-4 text-blue-600" />
             Grievance Title
           </label>
           <input
@@ -124,16 +194,17 @@ const GrievanceForm: React.FC<GrievanceFormProps> = ({ onSubmit }) => {
             type="text"
             value={formData.title}
             onChange={handleChange}
-            className={`w-full px-4 py-2 border ${
-              errors.title ? 'border-red-500' : 'border-gray-300'
-            } rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
+            className={`form-input ${
+              errors.title ? 'border-red-500 focus:border-red-500 focus:ring-red-500/10' : ''
+            }`}
             placeholder="Brief title of your grievance"
           />
           {errors.title && <p className="mt-1 text-sm text-red-600">{errors.title}</p>}
         </div>
         
         <div>
-          <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="category" className="form-label">
+            <Tag className="h-4 w-4 text-blue-600" />
             Category
           </label>
           <select
@@ -141,7 +212,7 @@ const GrievanceForm: React.FC<GrievanceFormProps> = ({ onSubmit }) => {
             name="category"
             value={formData.category}
             onChange={handleChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            className="form-input"
           >
             <option value="academic">Academic Issues</option>
             <option value="infrastructure">Infrastructure</option>
@@ -152,7 +223,8 @@ const GrievanceForm: React.FC<GrievanceFormProps> = ({ onSubmit }) => {
         </div>
         
         <div>
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="description" className="form-label">
+            <FileText className="h-4 w-4 text-blue-600" />
             Description
           </label>
           <textarea
@@ -161,26 +233,35 @@ const GrievanceForm: React.FC<GrievanceFormProps> = ({ onSubmit }) => {
             rows={6}
             value={formData.description}
             onChange={handleChange}
-            className={`w-full px-4 py-2 border ${
-              errors.description ? 'border-red-500' : 'border-gray-300'
-            } rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
+            className={`form-input min-h-[180px] resize-y ${
+              errors.description ? 'border-red-500 focus:border-red-500 focus:ring-red-500/10' : ''
+            }`}
             placeholder="Provide detailed information about your grievance..."
           ></textarea>
           {errors.description && <p className="mt-1 text-sm text-red-600">{errors.description}</p>}
-          <p className="mt-1 text-sm text-gray-500">Minimum 50 characters required.</p>
+          <p className="mt-2 text-sm text-slate-500">Minimum 50 characters required.</p>
         </div>
         
         <div>
-          <label htmlFor="documents" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="documents" className="form-label">
+            <FileUp className="h-4 w-4 text-blue-600" />
             Supporting Documents (Optional)
           </label>
-          <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+          <div
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={handleFileDrop}
+            className={`mt-2 flex justify-center rounded-2xl border-2 border-dashed px-6 pb-6 pt-5 transition-colors ${
+              errors.documents
+                ? 'border-red-300 bg-red-50'
+                : 'border-blue-200 bg-blue-50/50 hover:border-blue-300 hover:bg-blue-50'
+            }`}
+          >
             <div className="space-y-1 text-center">
-              <FileUp className="mx-auto h-12 w-12 text-gray-400" />
-              <div className="flex text-sm text-gray-600">
+              <FileUp className="mx-auto h-12 w-12 text-blue-500" />
+              <div className="flex justify-center text-sm text-slate-600">
                 <label
                   htmlFor="documents"
-                  className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none"
+                  className="relative cursor-pointer rounded-md font-bold text-blue-700 hover:text-blue-600 focus-within:outline-none"
                 >
                   <span>Upload files</span>
                   <input
@@ -194,7 +275,7 @@ const GrievanceForm: React.FC<GrievanceFormProps> = ({ onSubmit }) => {
                 </label>
                 <p className="pl-1">or drag and drop</p>
               </div>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-slate-500">
                 PNG, JPG, PDF up to 10MB each (maximum 5 files)
               </p>
               {files && files.length > 0 && (
@@ -211,9 +292,10 @@ const GrievanceForm: React.FC<GrievanceFormProps> = ({ onSubmit }) => {
               )}
             </div>
           </div>
+          {errors.documents && <p className="mt-2 text-sm text-red-600">{errors.documents}</p>}
         </div>
         
-        <div className="bg-yellow-50 p-4 rounded-md">
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
           <div className="flex">
             <div className="flex-shrink-0">
               <AlertTriangle className="h-5 w-5 text-yellow-600" />
@@ -247,11 +329,14 @@ const GrievanceForm: React.FC<GrievanceFormProps> = ({ onSubmit }) => {
           <button
             type="submit"
             disabled={isSubmitting}
-            className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
-              isSubmitting ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
-            } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors`}
+            className="btn-primary w-full py-3.5 text-base"
           >
-            {isSubmitting ? 'Submitting...' : 'Submit Grievance'}
+            {isSubmitting ? 'Submitting...' : (
+              <>
+                <Send className="h-4 w-4" />
+                Submit Grievance
+              </>
+            )}
           </button>
         </div>
       </form>

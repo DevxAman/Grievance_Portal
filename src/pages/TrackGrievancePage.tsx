@@ -6,10 +6,12 @@ import GrievanceDetails from '../components/grievance/GrievanceDetails';
 import { useGrievance } from '../hooks/useGrievance';
 import { useAuth } from '../hooks/useAuth';
 import { Grievance } from '../types';
+import { addResponse } from '../lib/api';
+import { canFileGrievance } from '../lib/roles';
 import { AlertTriangle, CheckCircle2, FileSearch, Loader2, Trash2, Clock, Filter, PieChart, Clock3, List, ChevronRight, X, Eye } from 'lucide-react';
 
 const TrackGrievancePage: React.FC = () => {
-  const { grievances, fetchGrievances, sendReminder, deleteGrievance, loading, error, reminderCooldowns,changeStatus } = useGrievance();
+  const { grievances, fetchGrievances, sendReminder, deleteGrievance, loading, error, reminderCooldowns, changeStatus, getGrievanceById } = useGrievance();
   const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
   const [filterStatus, setFilterStatus] = useState<string>('all');
@@ -287,17 +289,36 @@ const handleStatusChange = async (
 
   if (success) {
     toast.success('Status updated');
+    const fresh = await getGrievanceById(grievanceId);
+    if (fresh) setSelectedGrievance(fresh);
   } else {
     toast.error('Failed to update status');
   }
 };
+
+const handleSubmitResponse = async (grievanceId: string, responseText: string) => {
+  if (!user) return;
+  await addResponse(grievanceId, user.id, responseText);
+  toast.success('Response submitted');
+  const fresh = await getGrievanceById(grievanceId);
+  if (fresh) setSelectedGrievance(fresh);
+  fetchGrievances();
+};
+
+const isClerkStaff = user?.role === 'clerk';
   return (
-    <div className="min-h-screen bg-gray-50 py-12 sm:py-16 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-2xl sm:text-3xl font-bold text-center text-gray-900 mt-10">Track Grievances</h1>
+    <div className="app-shell px-4 py-24 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-10 text-center">
+          <span className="page-kicker">Ticket tracking</span>
+          <h1 className="page-title mt-4">Track Grievances</h1>
+          <p className="page-subtitle mx-auto">
+            Review status, send reminders when eligible, and open each grievance for full response history.
+          </p>
+        </div>
         
         {error && (
-          <div className="mb-6 p-3 sm:p-4 bg-red-100 border border-red-400 text-red-700 rounded-md flex items-center">
+          <div className="mb-6 flex items-center rounded-2xl border border-red-200 bg-red-50 p-3 text-red-700 sm:p-4">
             <AlertTriangle className="h-5 w-5 text-red-500 mr-2 flex-shrink-0" />
             <span className="text-sm sm:text-base">{error}</span>
           </div>
@@ -305,36 +326,36 @@ const handleStatusChange = async (
         
         {/* Grievance Summary Section */}
         {!loading && summary && (
-          <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 mb-6">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+          <div className="surface-card mb-6 p-4 sm:p-6">
+            <h2 className="mb-4 flex items-center text-lg font-extrabold text-slate-950">
               <PieChart className="h-5 w-5 mr-2 text-blue-600" />
               Grievance Summary
             </h2>
             
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-blue-50 p-4 rounded-lg">
+              <div className="metric-card border-blue-100 bg-blue-50">
                 <p className="text-sm text-gray-600">Total Grievances</p>
                 <p className="text-2xl font-bold text-blue-700">{summary.counts.total}</p>
               </div>
-              <div className="bg-green-50 p-4 rounded-lg">
+              <div className="metric-card border-green-100 bg-green-50">
                 <p className="text-sm text-gray-600">Resolved</p>
                 <p className="text-2xl font-bold text-green-700">{summary.counts.resolved}</p>
                 <p className="text-xs text-gray-500">{summary.percentResolved}% of total</p>
               </div>
-              <div className="bg-yellow-50 p-4 rounded-lg">
+              <div className="metric-card border-amber-100 bg-amber-50">
                 <p className="text-sm text-gray-600">Pending/In Progress</p>
                 <p className="text-2xl font-bold text-yellow-700">
                   {summary.counts.pending + summary.counts['under-review'] + summary.counts['in-progress']}
                 </p>
               </div>
-              <div className="bg-red-50 p-4 rounded-lg">
+              <div className="metric-card border-red-100 bg-red-50">
                 <p className="text-sm text-gray-600">Rejected</p>
                 <p className="text-2xl font-bold text-red-700">{summary.counts.rejected}</p>
               </div>
             </div>
             
             {oldestPending && (
-              <div className="mt-4 p-3 bg-blue-50 rounded-lg flex items-start">
+              <div className="mt-4 flex items-start rounded-2xl border border-blue-100 bg-blue-50 p-3">
                 <Clock3 className="h-5 w-5 mr-2 text-blue-600 mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="text-sm font-medium text-gray-700">Oldest Pending Grievance:</p>
@@ -356,13 +377,13 @@ const handleStatusChange = async (
           </div>
         )}
         
-        <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 mb-6">
+        <div className="surface-card mb-6 p-4 sm:p-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-800">Filter by Status</h2>
+              <h2 className="text-lg font-extrabold text-slate-950">Filter by Status</h2>
               <button 
                 onClick={toggleMobileFilters}
-                className="inline-flex items-center sm:hidden px-3 py-1.5 bg-gray-100 rounded-md text-gray-700 text-sm"
+                className="inline-flex items-center rounded-lg bg-slate-100 px-3 py-1.5 text-sm text-slate-700 sm:hidden"
               >
                 <Filter className="h-4 w-4 mr-1" />
                 Filters
@@ -375,7 +396,7 @@ const handleStatusChange = async (
                 className={`px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-colors ${
                   filterStatus === 'all'
                     ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                 }`}
               >
                 All
@@ -385,7 +406,7 @@ const handleStatusChange = async (
                 className={`px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-colors ${
                   filterStatus === 'pending'
                     ? 'bg-yellow-500 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                 }`}
               >
                 Pending
@@ -395,7 +416,7 @@ const handleStatusChange = async (
                 className={`px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-colors ${
                   filterStatus === 'under-review'
                     ? 'bg-blue-500 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                 }`}
               >
                 Under Review
@@ -405,7 +426,7 @@ const handleStatusChange = async (
                 className={`px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-colors ${
                   filterStatus === 'in-progress'
                     ? 'bg-orange-500 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                 }`}
               >
                 In Progress
@@ -415,7 +436,7 @@ const handleStatusChange = async (
                 className={`px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-colors ${
                   filterStatus === 'resolved'
                     ? 'bg-green-500 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                 }`}
               >
                 Resolved
@@ -425,7 +446,7 @@ const handleStatusChange = async (
                 className={`px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-colors ${
                   filterStatus === 'rejected'
                     ? 'bg-red-500 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                 }`}
               >
                 Rejected
@@ -440,7 +461,7 @@ const handleStatusChange = async (
             <p className="text-base sm:text-lg text-gray-600">Loading your grievances...</p>
           </div>
         ) : filteredGrievances.length === 0 ? (
-          <div className="bg-white rounded-lg shadow-md p-8 sm:p-12 text-center">
+          <div className="surface-card p-8 text-center sm:p-12">
             <FileSearch className="h-12 w-12 sm:h-16 sm:w-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">No Grievances Found</h3>
             <p className="text-sm sm:text-base text-gray-600 mb-6">
@@ -448,10 +469,10 @@ const handleStatusChange = async (
                 ? (user?.role === 'admin' ? "No grievances found in the system." : "You haven't submitted any grievances yet.")
                 : `No ${filterStatus.replace('-', ' ')} grievances found.`}
             </p>
-            {user?.role !== 'admin' && (
+            {canFileGrievance(user?.role) && (
               <button
                 onClick={() => navigate('/file-grievance')}
-                className="px-4 py-2 bg-blue-600 text-white text-sm sm:text-base rounded-md hover:bg-blue-700 transition-colors"
+                className="btn-primary"
               >
                 File a New Grievance
               </button>
@@ -478,7 +499,7 @@ const handleStatusChange = async (
       {grievances.length > 0 && (
         <button
           onClick={openAllGrievancesModal}
-          className="fixed bottom-8 right-8 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-full shadow-lg flex items-center transition-colors"
+          className="fixed bottom-8 right-8 flex items-center rounded-full bg-blue-600 px-4 py-2 font-bold text-white shadow-lg shadow-blue-600/20 transition-colors hover:bg-blue-700"
         >
           <List className="w-5 h-5 mr-2" />
           View All Grievances
@@ -487,8 +508,8 @@ const handleStatusChange = async (
 
       {/* All Grievances Modal */}
       {showAllGrievancesModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-5xl w-full h-[80vh] flex flex-col">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4">
+          <div className="flex h-[80vh] w-full max-w-5xl flex-col rounded-2xl bg-white shadow-2xl">
             <div className="p-4 border-b border-gray-200 flex justify-between items-center">
               <h2 className="text-xl font-semibold text-gray-900 flex items-center">
                 <List className="w-5 h-5 mr-2 text-blue-600" />
@@ -690,6 +711,10 @@ const handleStatusChange = async (
         grievance={selectedGrievance}
         isOpen={isDetailsOpen}
         onClose={handleCloseDetails}
+        staffMode={isClerkStaff}
+        staffRoleLabel="Clerk"
+        onStatusChange={isClerkStaff ? handleStatusChange : undefined}
+        onSubmitResponse={isClerkStaff ? handleSubmitResponse : undefined}
       />
     </div>
   );
