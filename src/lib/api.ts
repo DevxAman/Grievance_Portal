@@ -391,7 +391,7 @@ export const submitGrievance = async (formData: FormData, userId: string): Promi
           const fileExt = file.name.split('.').pop();
           const fileName = `${Math.random()}.${fileExt}`;
           const { data, error } = await supabase.storage
-            .from('grievance-documents')
+            .from('Grievance Files')
             .upload(fileName, file);
 
           if (error) throw error;
