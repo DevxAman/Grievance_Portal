@@ -23,6 +23,7 @@ const HERO_NAV_PATHS = [
   '/contact',
   '/how-it-works',
   '/dashboard',
+  '/admin/dashboard',
   '/clerk/dashboard',
 ];
 
@@ -125,9 +126,12 @@ const Navbar: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const DASHBOARD_PATHS = ['/admin/dashboard', '/clerk/dashboard'];
+  const isDashboardNav = DASHBOARD_PATHS.includes(location.pathname);
+
     const navSurfaceClass = isHeroNav
-    ? scrolled
-      ? 'bg-black/55 backdrop-blur-xl shadow-lg border-b border-white/5'
+    ? (scrolled || isDashboardNav)
+      ? 'bg-slate-900/95 backdrop-blur-xl shadow-lg border-b border-white/10'
       : 'bg-transparent border-b border-transparent'
     : scrolled
       ? 'bg-white/95 backdrop-blur-xl shadow-md shadow-slate-900/5 border-b border-slate-200/80'
